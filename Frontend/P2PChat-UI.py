@@ -46,8 +46,18 @@ def sdbm_hash(instr):
 def do_User():
     # declaring client_status as global
     global client_status
-
-    if userentry =
+    if userentry.get():
+        if client_status !+ "JOINED" and client_status != "CONNECTED":
+            global user_name
+            user_name = userentry.get()
+            client_status = "NAMED"
+            CmdWin.insert(1.0, "\n[User] username: " + user_name)
+            userentry.delete(0, END)
+        else:
+            CmdWin.insert(
+                1.0, "\nCannot change username after joining a chatroom")
+    else:
+        CmdWin.insert(1.0, "\nPlease enter your desired username")
 
 
 def do_List():
