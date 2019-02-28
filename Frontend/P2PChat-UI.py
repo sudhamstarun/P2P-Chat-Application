@@ -2,7 +2,7 @@
 
 # Student name and No.: Tarun Sudhams, 3035253876
 # Student name and No.: Anchit Som, 3035244265
-# Development platform: Ubuntu 18.04 LTS
+# Development platform: Mac OS X 10.12
 # Python version: Python 3.7.2 64-bit
 # Version: 2.0
 
