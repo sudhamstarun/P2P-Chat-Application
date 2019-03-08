@@ -38,10 +38,10 @@ def sdbm_hash(instr):
         hash = int(ord(c)) + (hash << 6) + (hash << 16) - hash
     return hash & 0xffffffffffffffff
 
-
 #
 # Functions to handle user input
 #
+
 
 def do_User():
     # declaring client_status as global
@@ -86,6 +86,7 @@ def do_Quit():
 #
 # Set up of Basic UI
 #
+
 win = Tk()
 win.title("MyP2PChat")
 
