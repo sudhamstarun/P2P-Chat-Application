@@ -4,7 +4,7 @@
 # Student name and No.: Anchit Som, 3035244265
 # Development platform: Mac OS X 10.12
 # Python version: Python 3.7.2 64-bit
-# Version: 2.0
+# Version: 1.0
 
 
 from tkinter import *
@@ -49,7 +49,7 @@ def do_User():
 
     if userentry.get():  # to check if the entry inserted by the user is not empty
         # further the user should not have joined the chat room yet
-        if client_status !+ "JOINED" and client_status != "CONNECTED":
+        if client_status !+ "CONNECTED" and client_status != "JOINED":
             global user_name  # accessing the username
             user_name = userentry.get()
             client_status = "NAMED"
@@ -65,14 +65,38 @@ def do_User():
 
 def do_List():
     # starting a try except condition
-
     try:
         roomServerSocket.send(msg.encode('ascii'))  # doing ascii encoding
-        receiveResponse = roomServerSocket.recv(1024)
-        receiveResponse str(response.decode('ascii'))
+        receiveResponse = roomServerSocket.recv(
+            1024)  # storing the response received
+        # converting the bytearray to string
+        receiveResponse str(receiveResponse.decode('ascii'))
 
+        if receiveResponse:
+            if receiveResponse[0] == "G":
+                receiveResponse = ResourceWarning[2:-4]
+
+                if len(receiveResponse) == 0:
+                    CmdWin.insert(1.0, "\nNo Active Chatrooms!")
+
+                else:
+                    availableRooms = receiveResponse.split(":")
+                    for room i availableRooms:
+                        CmdWin.insert(1.0, "\n\t"+room)
+                    CmdWin.insert(
+                        1.0, "\nHere is the list of active chatrooms")
+            elif receiveResponse[0] == "F":
+                receiveResponse = receiveResponse[2:-4]
+                CmdWin.insert(
+                    1.0, "\nError in retreiving the chatroom list: "+receiveResponse)
+
+        else:
+            rasise socket.error("Socket is broken. Please try again. (IndexError)")
     except socket.error as err:
-    CmdWin.insert(1.0, "\nPress List")
+        print(str(err))
+        CmdWin.insert(1.0, "\nReconnecting.........")
+        roomServerSocket.close()
+        _thread.start_new_thread(roomServerSocket, (do_List,))
 
 
 def do_Join():
