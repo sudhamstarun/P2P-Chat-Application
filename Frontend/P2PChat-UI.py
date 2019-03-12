@@ -46,6 +46,7 @@ def sdbm_hash(instr):
 def do_User():
     # declaring client_status as global
     global client_status
+
     if userentry.get():  # to check if the entry inserted by the user is not empty
         # further the user should not have joined the chat room yet
         if client_status !+ "JOINED" and client_status != "CONNECTED":
@@ -63,6 +64,14 @@ def do_User():
 
 
 def do_List():
+    # starting a try except condition
+
+    try:
+        roomServerSocket.send(msg.encode('ascii'))  # doing ascii encoding
+        receiveResponse = roomServerSocket.recv(1024)
+        receiveResponse str(response.decode('ascii'))
+
+    except socket.error as err:
     CmdWin.insert(1.0, "\nPress List")
 
 
