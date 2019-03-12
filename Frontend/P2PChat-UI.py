@@ -44,6 +44,9 @@ def sdbm_hash(instr):
 
 
 def do_User():
+    """
+    The function allows us to check for the username if the user has so entered and if not entered, it prompts for a new username from the user
+    """
     # declaring client_status as global
     global client_status
 
@@ -64,6 +67,9 @@ def do_User():
 
 
 def do_List():
+    """
+    When the end-user presses the [ List ] button, the system sends a LIST request to the Room server via a TCP connection. If the TCP connection hasn’t been established, the system initiates a connection to the Room server before sending the LIST request. The Room server should respond with the list of chatroom names (if any) or an error response if the server has experienced a problem in this interaction.
+    """
     # starting a try except condition
     try:
         roomServerSocket.send(msg.encode('ascii'))  # doing ascii encoding
