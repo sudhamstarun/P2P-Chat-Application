@@ -20,6 +20,12 @@ import _thread
 
 client_status  # status of the client as mentioned in the state diagrams
 user_name  # Username defined by the user
+currentRoom = ""
+lastMessageID = 0  # ID of the last message that was sent by the user
+
+
+# Global Lists
+hashArray = []
 
 #
 # This is the hash function for generating a unique
@@ -113,7 +119,12 @@ def do_Join():
     try:
         if userentry.get():
             if username != "":
-                if not (client_status == "JOINED" or client_status == "CONNECTED")
+                if not (client_status == "JOINED" or client_status == "CONNECTED"):
+                    global room_name  # name of the room that the user will enter
+                    # record user input of the room name
+                    room_name = userentry.get()
+
+                    msg = "J:" + room_name + ":"
 
 
 def do_Send():
