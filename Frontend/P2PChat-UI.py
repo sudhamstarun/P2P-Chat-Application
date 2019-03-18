@@ -20,12 +20,13 @@ import _thread
 
 client_status  # status of the client as mentioned in the state diagrams
 user_name  # Username defined by the user
-currentRoom = ""
+currentRoom = ""  # name of the current
 lastMessageID = 0  # ID of the last message that was sent by the user
 
 
 # Global Lists
 hashArray = []
+
 
 #
 # This is the hash function for generating a unique
