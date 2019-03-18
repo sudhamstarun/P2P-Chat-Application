@@ -106,7 +106,14 @@ def do_List():
 
 
 def do_Join():
-    CmdWin.insert(1.0, "\nPress JOIN")
+    global client_status
+
+    # starting tryy except loop again
+
+    try:
+        if userentry.get():
+            if username != "":
+                if not (client_status == "JOINED" or client_status == "CONNECTED")
 
 
 def do_Send():
