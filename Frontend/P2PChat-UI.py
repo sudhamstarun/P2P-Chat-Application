@@ -22,6 +22,7 @@ client_status  # status of the client as mentioned in the state diagrams
 user_name  # Username defined by the user
 currentRoom = ""  # name of the current
 lastMessageID = 0  # ID of the last message that was sent by the user
+roomServerSocket
 
 
 # Global Lists
@@ -50,16 +51,32 @@ def sdbm_hash(instr):
 #
 
 
-def do_User():
+def connectServer(callback):
+    ButtonOne['state'] = 'disabled'
+    ButtonTwo['state'] = 'disabled'
+    ButtonThree['state'] = 'disabled'
+    ButtonFour['state'] = 'disabled'
+
+    iterator = 0
+
+    global IPAddress
+    global PortNumber
+    global roomServerIPAddress
+    global roomServerSocket
+
+    while 1:
+        iterator += 1
+        print("Connecting to Room Server again")
+        try:
+
+
+def do_User(client_status):
     """
     The function allows us to check for the username if the user has so entered and if not entered, it prompts for a new username from the user
     """
-    # declaring client_status as global
-    global client_status
-
     if userentry.get():  # to check if the entry inserted by the user is not empty
         # further the user should not have joined the chat room yet
-        if client_status !+ "CONNECTED" and client_status != "JOINED":
+        if client_status != "CONNECTED" and client_status != "JOINED":
             global user_name  # accessing the username
             user_name = userentry.get()
             client_status = "NAMED"
@@ -77,6 +94,7 @@ def do_List():
     """
     When the end-user presses the [ List ] button, the system sends a LIST request to the Room server via a TCP connection. If the TCP connection hasn’t been established, the system initiates a connection to the Room server before sending the LIST request. The Room server should respond with the list of chatroom names (if any) or an error response if the server has experienced a problem in this interaction.
     """
+    msg = "L::\r\n"
     # starting a try except condition
     try:
         roomServerSocket.send(msg.encode('ascii'))  # doing ascii encoding
@@ -90,7 +108,7 @@ def do_List():
                 receiveResponse = ResourceWarning[2:-4]
 
                 if len(receiveResponse) == 0:
-                    CmdWin.insert(1.0, "\nNo Active Chatrooms!")
+                    CmdWin.insert(1.0, "\nNo Active Chatrooms available")
 
                 else:
                     availableRooms = receiveResponse.split(":")
@@ -112,11 +130,8 @@ def do_List():
         _thread.start_new_thread(roomServerSocket, (do_List,))
 
 
-def do_Join():
-    global client_status
-
+def do_Join(client_status):
     # starting tryy except loop again
-
     try:
         if userentry.get():
             if username != "":
@@ -125,7 +140,9 @@ def do_Join():
                     # record user input of the room name
                     room_name = userentry.get()
 
-                    msg = "J:" + room_name + ":"
+                    message = "J:" + room_name + ":" + user_name + \
+                        ":" + IPAdress + ":" + PortNumber + "::\r\n"
+                    connectServer
 
 
 def do_Send():
@@ -199,13 +216,9 @@ CmdWin.config(yscrollcommand=bottscroll.set)
 bottscroll.config(command=CmdWin.yview)
 
 
-def main():
+if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("P2PChat.py <server address> <server port no.> <my port no.>")
         sys.exit(2)
 
     win.mainloop()
-
-
-if __name__ == "__main__":
-    main()
