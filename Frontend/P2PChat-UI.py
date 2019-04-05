@@ -68,6 +68,10 @@ def connectServer(callback):
         iterator += 1
         print("Connecting to Room Server again")
         try:
+            roomServerSocket = socket.socket()
+            roomServerSocket.connect((roomServerIPAddress, int(PortNumber)))
+            IPAddress = roomServerSocket.getsockname()[0]
+            CmdWin.insert(1.0, "\nConnected to Room Server")
 
 
 def do_User(client_status):
