@@ -18,7 +18,7 @@ import _thread
 # Global variables
 #
 
-client_status  # status of the client as mentioned in the state diagrams
+global client_status  # status of the client as mentioned in the state diagrams
 user_name  # Username defined by the user
 currentRoom = ""  # name of the current
 lastMessageID = 0  # ID of the last message that was sent by the user
@@ -49,6 +49,21 @@ def sdbm_hash(instr):
 #
 # Functions to handle user input
 #
+
+
+def hashhCalculator()
+
+
+def memberListUpdate()
+
+
+def peerManager():
+
+
+def runningServerLogic()
+
+
+def runProcedureForever():
 
 
 def connectServer(callback):
@@ -84,6 +99,10 @@ def connectServer(callback):
             time.sleep(5)
 
     callback()
+
+#
+# Functions that were already given to us
+#
 
 
 def do_User(client_status):
