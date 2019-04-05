@@ -72,6 +72,18 @@ def connectServer(callback):
             roomServerSocket.connect((roomServerIPAddress, int(PortNumber)))
             IPAddress = roomServerSocket.getsockname()[0]
             CmdWin.insert(1.0, "\nConnected to Room Server")
+            ButtonOne['state'] = 'normal'
+            ButtonTwo['state'] = 'normal'
+            ButtonThree['state'] = 'normal'
+            ButtonFour['state'] = 'normal'
+            break
+        except ConnectionRefusedError:
+            roomServerSocket.close()
+            CmdWin.delete(2.0, 3.0)
+            CmdWin.insert(1.0, "\nCannot connect to the Room Server right now, reconnecting in a while......(" + str(i) ")")
+            time.sleep(5)
+
+    callback()
 
 
 def do_User(client_status):
