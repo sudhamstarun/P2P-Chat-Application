@@ -195,18 +195,18 @@ topscroll.config(command=MsgWin.yview)
 # Top Middle Frame for buttons
 topmidframe = Frame(win, relief=RAISED, borderwidth=1)
 topmidframe.pack(fill=X, expand=True)
-Butt01 = Button(topmidframe, width='6', relief=RAISED,
-                text="User", command=do_User)
-Butt01.pack(side=LEFT, padx=8, pady=8)
-Butt02 = Button(topmidframe, width='6', relief=RAISED,
-                text="List", command=do_List)
-Butt02.pack(side=LEFT, padx=8, pady=8)
-Butt03 = Button(topmidframe, width='6', relief=RAISED,
-                text="Join", command=do_Join)
-Butt03.pack(side=LEFT, padx=8, pady=8)
-Butt04 = Button(topmidframe, width='6', relief=RAISED,
-                text="Send", command=do_Send)
-Butt04.pack(side=LEFT, padx=8, pady=8)
+ButtonOne = Button(topmidframe, width='6', relief=RAISED,
+                   text="User", command=do_User)
+ButtonOne.pack(side=LEFT, padx=8, pady=8)
+ButtonTwo = Button(topmidframe, width='6', relief=RAISED,
+                   text="List", command=do_List)
+ButtonTwo.pack(side=LEFT, padx=8, pady=8)
+ButtonThree = Button(topmidframe, width='6', relief=RAISED,
+                     text="Join", command=do_Join)
+ButtonThree.pack(side=LEFT, padx=8, pady=8)
+ButtonFour = Button(topmidframe, width='6', relief=RAISED,
+                    text="Send", command=do_Send)
+ButtonFour.pack(side=LEFT, padx=8, pady=8)
 Butt06 = Button(topmidframe, width='6', relief=RAISED,
                 text="Poke", command=do_Poke)
 Butt06.pack(side=LEFT, padx=8, pady=8)
