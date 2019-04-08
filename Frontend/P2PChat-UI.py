@@ -129,7 +129,9 @@ def runProcedureForever():
             time.sleep(20)
             memberListUpdate("Keep Alive")
 
-            if not forw
+            if client_status == "JOINED" or not forwardLink:
+                global listofMemeber
+                searchPeer(listofMemeber)
 
 
 def connectServer(callback):
