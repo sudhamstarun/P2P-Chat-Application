@@ -18,16 +18,17 @@ import _thread
 # Global variables
 #
 
-global client_status  # status of the client as mentioned in the state diagrams
+client_status = "START"  # status of the client as mentioned in the state diagrams
 user_name  # Username defined by the user
 currentRoom = ""  # name of the current
 lastMessageID = 0  # ID of the last message that was sent by the user
 roomServerSocket
 
 
-# Global Lists
+# Global Lists adn Tuples
 hashArray = []
-
+listofMemeber = []
+forwardLink = ()
 
 #
 # This is the hash function for generating a unique
@@ -51,10 +52,69 @@ def sdbm_hash(instr):
 #
 
 
-def hashhCalculator()
+def createChunks(array, sizeOfChunk):
+    return (array[pos:pos + sizeOfChunk] for pos in range(0, len(array), sizeOfChunk))
 
 
-def memberListUpdate()
+def hashCalculator(listofMemeber):
+    global currentHashes
+
+    currentHashes = []
+
+    for member in listofMemeber:
+        concat = ""
+        for element in member:
+            concat = concat + element
+        currentHashes.append(member, sdbm_hash(concat))
+
+        if member[0] == user_name:
+            currentInfo = member
+
+    currentHashes = sorted(currentHashes, key=lambda tuple: tuple[1])
+
+    return currentInfo
+
+
+def memberListUpdate(*source):
+    global currentChatHashID
+    msg = "J:" + room_name + ":" + user_name + \
+        ":" + IPAddress + ":" + PortNumber + "::\r\n"
+
+    try:
+       roomServerSocket.send(msg.encode("ascii"))
+        response = roomServerSocket.recv(1024)
+
+        if response:
+            response[0] = "M"
+            currentTime = datetime.datetime.now()
+            print(source. "Joining conducted at", currentTime.strftime(("%Y-%m-%d %H:%M:%S")))
+            response = response[2:-4]
+            members = response.split(":")
+
+            if currentChatHashID != members[0]:
+                global listofMemeber
+                currentChatHashID = members[0]
+                listofMemeber = []
+
+                for cluster in createChunks(members[1:], 3):
+                    listofMemeber.append(cluster)
+
+                print("List has been updated")
+                hashCalculator(listofMemeber)
+            elif response[0] == "F":
+                response = response[2:-4]
+                CmdWin.insert(
+                    1.0, "\n There is an error in performing JOIN req" + response)
+                return False
+        else:
+            return False
+    except:
+        CmdWin.insert(
+            1.0, "\nRoom server connection is broken, trying to reconnect....")
+        roomServerSocket.close()
+        _thread.start_new_thread(roomServerSocket, (memberListUpdate, ))
+
+    except:
 
 
 def peerManager():
@@ -64,6 +124,12 @@ def runningServerLogic()
 
 
 def runProcedureForever():
+    CmdWin.insert(1.0, "\Running forever proceudure....")
+        while roomServerSocket:
+            time.sleep(20)
+            memberListUpdate("Keep Alive")
+
+            if not forw
 
 
 def connectServer(callback):
@@ -167,6 +233,11 @@ def do_List():
 
 def do_Join(client_status):
     # starting tryy except loop again
+
+    global currentChatHashID
+    global listofMemeber
+    global currentRoom
+
     try:
         if userentry.get():
             if username != "":
@@ -177,7 +248,22 @@ def do_Join(client_status):
 
                     message = "J:" + room_name + ":" + user_name + \
                         ":" + IPAdress + ":" + PortNumber + "::\r\n"
-                    connectServer
+                    connectServer.send(msg.encode('ascii'))
+                    response = roomServerSocket.recv(1024)
+                    response = str(response.decode('ascii'))
+
+                    if response:
+                        if response[0] == 'M':
+                            response = response[2:-4]
+                            members = response.split(":")
+
+                            currentChatHashID = members[0]
+                            CmdWin.insert(1.0, "\n\t" + str(group))
+                            client_status = "JOINED"
+                            userentry.delete(0, END)
+
+                            currentRoom = room_name
+                            _thread.start_new_thread)(runProcedureForever, ())
 
 
 def do_Send():
@@ -197,14 +283,14 @@ def do_Quit():
 # Set up of Basic UI
 #
 
-win = Tk()
+win=Tk()
 win.title("MyP2PChat")
 
 # Top Frame for Message display
-topframe = Frame(win, relief=RAISED, borderwidth=1)
-topframe.pack(fill=BOTH, expand=True)
-topscroll = Scrollbar(topframe)
-MsgWin = Text(topframe, height='15', padx=5, pady=5,
+topframe=Frame(win, relief = RAISED, borderwidth = 1)
+topframe.pack(fill = BOTH, expand = True)
+topscroll=Scrollbar(topframe)
+MsgWin=Text(topframe, height = '15', padx = 5, pady = 5,
               fg="red", exportselection=0, insertofftime=0)
 MsgWin.pack(side=LEFT, fill=BOTH, expand=True)
 topscroll.pack(side=RIGHT, fill=Y, expand=True)
@@ -227,10 +313,10 @@ ButtonFour = Button(topmidframe, width='6', relief=RAISED,
                     text="Send", command=do_Send)
 ButtonFour.pack(side=LEFT, padx=8, pady=8)
 ButtonSix = Button(topmidframe, width='6', relief=RAISED,
-                text="Poke", command=do_Poke)
+                   text="Poke", command=do_Poke)
 ButtonSix.pack(side=LEFT, padx=8, pady=8)
 ButtonFive = Button(topmidframe, width='6', relief=RAISED,
-                text="Quit", command=do_Quit)
+                    text="Quit", command=do_Quit)
 ButtonFive.pack(side=LEFT, padx=8, pady=8)
 
 # Lower Middle Frame for User input
