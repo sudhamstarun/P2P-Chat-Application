@@ -226,12 +226,12 @@ ButtonThree.pack(side=LEFT, padx=8, pady=8)
 ButtonFour = Button(topmidframe, width='6', relief=RAISED,
                     text="Send", command=do_Send)
 ButtonFour.pack(side=LEFT, padx=8, pady=8)
-Butt06 = Button(topmidframe, width='6', relief=RAISED,
+ButtonSix = Button(topmidframe, width='6', relief=RAISED,
                 text="Poke", command=do_Poke)
-Butt06.pack(side=LEFT, padx=8, pady=8)
-Butt05 = Button(topmidframe, width='6', relief=RAISED,
+ButtonSix.pack(side=LEFT, padx=8, pady=8)
+ButtonFive = Button(topmidframe, width='6', relief=RAISED,
                 text="Quit", command=do_Quit)
-Butt05.pack(side=LEFT, padx=8, pady=8)
+ButtonFive.pack(side=LEFT, padx=8, pady=8)
 
 # Lower Middle Frame for User input
 lowmidframe = Frame(win, relief=RAISED, borderwidth=1)
