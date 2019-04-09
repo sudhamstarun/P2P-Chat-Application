@@ -117,7 +117,30 @@ def memberListUpdate(*source):
     except:
 
 
-def peerManager():
+def peerManager(linkType, isConnection):
+    while isConnection:
+        response = isConnection.recv(1024)
+        response = str(response.decode('ascii'))
+
+        if response[0] == 'T':
+            response = response[2:-4]
+            messageInfo = response.split(':')
+            room = messageInfo[0]
+
+            if room == currentRoom:
+                sourceHashID = messageInfo[1]
+                sourceUserName = messageInfo[2]
+                sourceMessageID = messageInfo[3]
+                sourceMessageLength = messageInfo[4]
+
+                sourceMessage = response[-(int(sourceMessageLength))]
+
+                lock.acquire()
+
+                global messages
+
+                if(sourceHashID, sourceMessageID) not in messages:
+                    MsgWin.insert(1.0, "\n["+sourceUserName"]" + sourceMessage)
 
 
 def runningServerLogic()
