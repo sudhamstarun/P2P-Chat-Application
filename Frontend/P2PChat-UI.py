@@ -141,9 +141,45 @@ def peerManager(linkType, isConnection):
 
                 if(sourceHashID, sourceMessageID) not in messages:
                     MsgWin.insert(1.0, "\n["+sourceUserName"]" + sourceMessage)
+                    messages.append((sourceHashID, sourceMessageID))
+                    lock.release()
+                    echoMessage(sourceHashID, sourceUserName, sourceMessage, sourceMessageID)
+                    memberArray = [member for member in currentHashes if str(member[1]) == str(sourceHashID)]
 
+                    if not memberArray:
+                        print("Hash not found", str(memberArray))
+                        memberListUpdate("Peer Handler")
+                
+                else:
+                    print("Received repeated message")
+                    lock.release()
+            else:
+                print("Received message from wrong chat room")
+        else:
+            break
 
-def runningServerLogic()
+    if linkType == "Forward":
+        memberListUpdate("Peer Quit")
+        global forwardLink
+        forwardLink = ()
+        global client_status
+        client_status="JOINED"
+        searchPeer(listofMemeber)
+    
+    else:
+        global backlinks
+        for link in backlinks:
+            if link[1] == isConnection:
+                backlinks.remove(link)
+                break
+
+def runningServerLogic():
+    sockfd = socket.socket()
+    sockfd.bind(('', int(PortNumber)))
+    
+    while sockfd:
+        sockfd.listen(5)
+        
 
 
 def runProcedureForever():
