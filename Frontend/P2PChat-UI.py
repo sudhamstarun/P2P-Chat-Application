@@ -458,7 +458,7 @@ def do_Send():
             global messageID
             messageID += 1
             MsgWin.insert(1.0, "\n["+user_name+"] "+userentry.get())
-            echoMessage(currentHashID, user_name, userentry.get(), messageID)		#Call echoMessage with my details. 
+            broadcastMessage(currentHashID, user_name, userentry.get(), messageID)		#Call echoMessage with my details. 
         else:
             CmdWin.insert(1.0, "\nNot joined any chat!")
     userentry.delete(0, END)
