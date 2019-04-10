@@ -179,8 +179,51 @@ def runningServerLogic():
     
     while sockfd:
         sockfd.listen(5)
-        
+        isConnection, address = sockfd.accept()
+        response = conn.recv(1024)			
+		response = str(response.decode("ascii"))
+        print ("Accepted connection from" + str(address))
+        if response
+            if response[0] == 'P':
+                response = response[2:-4]
+                connectorInfo = response.split(":")
+                connectorUserName = connectorInfo[1]
+                connectorMessageID = connectorInfo[4]
+                connectorIP = connectorInfo[2]
+                connectorPort = connectorInfo[3]
+                connectorRoomName = connectorInfo[0]
 
+                global listofMemeber
+
+                try:
+                    memberIndex = listofMemeber.index(connectorInfo[1:4])
+                except ValueError:
+                    if memberListUpdate("Server Procedure"):
+                        try:
+                            memberIndex = listofMemeber.index(connectorInfo[1:4])
+                        except ValueError:
+                            memberIndex = -1
+                            print("Unable to connect to" + str(address))
+                            isConnection.close()
+                    else:
+                        print("The connection was rejected as unable to update the members list")
+                    
+                if memberIndex != -1:
+                    msg = "S:" + str(messageID) + "::\r\n"
+                        isConnection.send(msg.encode('ascii'))
+                        join = connectorUserName + connectorIP + connectorPort
+                        backlinks.append(((connectorInfo[1:4], sdbm_hash(join)), isConnection))
+
+                        global client_status
+
+                        client_status = "CONNECTED"
+                        _thread.start_new_thread (peerManager, ("Backward", isConnection, ))
+                        CmdWin.insrt(1.0, "\n" + connectorUserName + "has linked to me")
+            
+            else:
+                isConnection.close()
+        else:
+            isConnection.close()
 
 def runProcedureForever():
     CmdWin.insert(1.0, "\Running forever proceudure....")
