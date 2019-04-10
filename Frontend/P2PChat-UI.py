@@ -51,7 +51,7 @@ def sdbm_hash(instr):
 # Functions to handle user input
 #
 
-
+#Inspired from https://stackoverflow.com/questions/52928737/best-practice-to-vstack-multiple-large-np-arrays
 def createChunks(array, sizeOfChunk):
     return (array[pos:pos + sizeOfChunk] for pos in range(0, len(array), sizeOfChunk))
 
@@ -336,7 +336,7 @@ def do_List():
 
 
 def do_Join(client_status):
-    # starting tryy except loop again
+    # starting try except loop again
 
     global currentChatHashID
     global listofMemeber
@@ -361,13 +361,40 @@ def do_Join(client_status):
                             response = response[2:-4]
                             members = response.split(":")
 
+                            global currentChatHashID
+                            global listofMemeber
                             currentChatHashID = members[0]
-                            CmdWin.insert(1.0, "\n\t" + str(group))
+                            CmdWin.insert(1.0, "\nChat room joined succesfully : " + room_name)
+                            
+
+                            for chunk in createChunks(members[1:], 3):
+                                listofMemeber.append(chunk)
+                                CmdWin.insert(1.0, "\n\t" + str(chunk))
+                            CmdWin.insert(1.0, "\nList of members:"))
                             client_status = "JOINED"
                             userentry.delete(0, END)
-
+                            globla currentRoom
                             currentRoom = room_name
-                            _thread.start_new_thread)(runProcedureForever, ())
+                            _thread.start_new_thread (runProcedureForever, ())
+                            _thread.start_new_thread (runningServerLogic, ())
+                            searchPeer(listofMemeber)
+                        
+                        elif response[0]== "F":
+                            response[0] = response[2:-4]
+                            CmdWin.insert(1.0, "\n Error in joining: " + response)
+                    else:
+                        raise socket.error("Broken socused index error")
+                else:
+                    CmdWin.insert(1.0, "\nAlready connected to a chat room ")
+            else:
+                CmdWin.insert(1.0, "\nPlease set username first.")
+        except socket.error as err:
+            print(str(err))
+            CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
+            roomServerSocket.close()	
+            _thread.start_new_thread (roomServerConnect, (do_Join, ))
+                    
+
 
 
 def do_Send():
