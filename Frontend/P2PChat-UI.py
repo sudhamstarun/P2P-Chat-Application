@@ -337,7 +337,7 @@ def udp_listener():
 	while True:
 		inputmessage, address = udpsocket.recvfrom(1024)
 		inputmessage = message.decode("utf-8")
-	    if inputmessage[0] == 'K':
+        if inputmessage[0] == 'K':
 		    Acknowledgement = "A::\r\n"
 		    udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], address[1]))
             name=inputmessage.split(":")
@@ -352,13 +352,6 @@ def do_User():
     """
     The function allows us to check for the username if the user has so entered and if not entered, it prompts for a new username from the user
     """
-
-    #create Udpsocket
-	udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	udpsocket.bind(('', PortNumber))
-	udpthread = threading.Thread(target=udp_listener, daemon=True)
-	udpthread.start()
-
     global client_status
 
     if userentry.get():  # to check if the entry inserted by the user is not empty
@@ -376,7 +369,11 @@ def do_User():
     else:
         CmdWin.insert(1.0, "\nPlease enter your desired username")
 
-
+       #create Udpsocket
+	udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	udpsocket.bind(('', PortNumber))
+	udpthread = threading.Thread(target=udp_listener, daemon=True)
+	udpthread.start()
 
 
 def do_List():
