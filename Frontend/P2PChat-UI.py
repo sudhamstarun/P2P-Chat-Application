@@ -70,7 +70,7 @@ def do_User():
 		CmdWin.insert(1.0, "\nPlease enter username!")
 
 def do_List():
-	msg = "L::\r\n"
+	message = "L::\r\n"
 	try:
 		roomServerSocket.send(message.encode("ascii"))
 		recieveResponse = roomServerSocket.recv(1024)
@@ -251,7 +251,11 @@ def peerManager(linkType, isConnection):
 		searchPeer(listOfMembers)
 
 	else:
+<<<<<<< HEAD
 		global backlinks 
+=======
+		global backlinks
+>>>>>>> f49e4d9cd4b31c40e27ba9421c1c084aedb3bbfc
 		for back in backlinks:
 			if back[1] == isConnection:
 				backlinks.remove(back)
