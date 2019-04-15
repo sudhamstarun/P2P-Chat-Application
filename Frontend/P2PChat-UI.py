@@ -70,7 +70,7 @@ def do_User():
 		CmdWin.insert(1.0, "\nPlease enter username!")
 
 def do_List():
-	msg = "L::\r\n"
+	message = "L::\r\n"
 	try:
 		roomServerSocket.send(message.encode("ascii"))
 		recieveResponse = roomServerSocket.recv(1024)
@@ -249,8 +249,9 @@ def peerManager(linkType, isConnection):
 		global client_status
 		client_status = "JOINED"
 		searchPeer(listOfMembers)
-        else:
-            global backlinks
+
+	else:
+		global backlinks
 		for back in backlinks:
 			if back[1] == isConnection:
 				backlinks.remove(back)
@@ -405,26 +406,28 @@ def connectServer(callback):
 	ButtonFour['state'] = 'disabled'
 
 	iterator=0
+
 	while True:
-		i = i+1
+		iterator = iterator+1
 		print("Trying to connect to Room Server")
 		try:
 			roomServerSocket = socket.socket()
-			roomServerSocket.connect((roomServerIP, int(roomServerPort)))
+			roomServerSocket.connect((roomServerIPAddress, int(roomServerPort)))
 			myIP = roomServerSocket.getsockname()[0]
 			CmdWin.insert(1.0, "\nConnected to Room Server!")
 			ButtonOne['state'] = 'normal'
 			ButtonTwo['state'] = 'normal'
 			ButtonThree['state'] = 'normal'
-		    ButtonFour['state'] = 'normal'
+			ButtonFour['state'] = 'normal'
 			break
 		except ConnectionRefusedError:
 			roomServerSocket.close()
 			CmdWin.delete(2.0, 3.0)
-			CmdWin.insert(1.0, "\nCannot contact Room Server, will try again in some time (" + str(i) +")")
+			CmdWin.insert(1.0, "\nCannot contact Room Server, will try again in some time (" + str(iterator) +")")
 			time.sleep(5)
 	callback()
-
+def do_Poke():
+	print("Press Poke")
 #
 # Set up of Basic UI
 #
