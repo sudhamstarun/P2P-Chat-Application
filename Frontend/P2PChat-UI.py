@@ -251,11 +251,7 @@ def peerManager(linkType, isConnection):
 		searchPeer(listOfMembers)
 
 	else:
-<<<<<<< HEAD
 		global backlinks 
-=======
-		global backlinks
->>>>>>> f49e4d9cd4b31c40e27ba9421c1c084aedb3bbfc
 		for back in backlinks:
 			if back[1] == isConnection:
 				backlinks.remove(back)
