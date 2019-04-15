@@ -49,8 +49,6 @@ def sdbm_hash(instr):
 	return hash & 0xffffffffffffffff
 
 # Inspired from https://stackoverflow.com/questions/52928737/best-practice-to-vstack-multiple-large-np-arrays
-
-
 def createChunker(array, chunkSize):
 	return (array[pos:pos + chunkSize] for pos in range(0, len(array), chunkSize))
 
@@ -60,12 +58,12 @@ def createChunker(array, chunkSize):
 def udp_listener():
 	while True:
 		inputmessage, address = udpsocket.recvfrom(1024)
-		print("address",address)
 		inputmessage = inputmessage.decode("utf-8")
 		splitmessage = inputmessage.split(":")
-		print(splitmessage) 
+
 		if "K" == splitmessage[0]:
 			Acknowledgement = "A::\r\n"
+
 			for name in listOfMembers:
 				if name[0] == splitmessage[2]:   
 					print(name[1], name[2])
@@ -74,13 +72,15 @@ def udp_listener():
 
 def do_User():
 	global client_status
+	flag = False
 	if userentry.get():
-		if client_status != "JOINED" and client_status != "CONNECTED":
-			global udpsocket
-			udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			udpsocket.bind(('', int(PortNumber)))
-			udpthread = threading.Thread(target=udp_listener, daemon=True)
-			udpthread.start()
+		for member in listOfMembers:
+			if member[0] == userentry.get():
+				flag = True
+				CmdWin.insert(1.0, "\nUsername already exists")
+
+		if client_status != "JOINED" and client_status != "CONNECTED" and flag == False:
+
 			global user_name
 			user_name = userentry.get()
 			client_status = "NAMED"
@@ -89,7 +89,7 @@ def do_User():
 		else:
 			CmdWin.insert(1.0, "\nCannot change user_name after joining a chatroom!")
 	else:
-		CmdWin.insert(1.0, "\nPlease enter user_name!")
+		CmdWin.insert(1.0, "\nCan't leave the user name box empty. Please enter user_name!")
 
 def do_List():
 	message = "L::\r\n"
@@ -97,33 +97,45 @@ def do_List():
 		roomServerSocket.send(message.encode("ascii"))
 		recieveResponse = roomServerSocket.recv(1024)
 		recieveResponse = str(recieveResponse.decode("ascii"))
+
 		if recieveResponse:
 			if recieveResponse[0] == 'G':
 				recieveResponse = recieveResponse[2:-4]
+
 				if len(recieveResponse) == 0:
 					CmdWin.insert(1.0, "\nNo active chatrooms")
+
 				else:
 					rooms = recieveResponse.split(":")
 					for room in rooms:
 						CmdWin.insert(1.0, "\n\t"+room)
+
 					CmdWin.insert(1.0, "\nHere are the active chat rooms:")
+
 			elif recieveResponse[0] == 'F':
 				recieveResponse = recieveResponse[2:-4]
 				CmdWin.insert(1.0, "\nError fetching chatroom list: "+recieveResponse)
 		else:
 			raise socket.error("IndexError due to broken socket")
+
 	except socket.error as err:
 		print(str(err))
-		CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
+		CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting.......")
 		roomServerSocket.close()
 		_thread.start_new_thread (connectServer, (do_List, ))
 
 def do_Join():
 	global client_status
+
 	try:
 		if userentry.get():
 			if user_name != "":
 				if not (client_status == "JOINED" or client_status == "CONNECTED"):
+					global udpsocket
+					udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+					udpsocket.bind(('', int(PortNumber)))
+					udpthread = threading.Thread(target=udp_listener, daemon=True)
+					udpthread.start()
 					global room_name
 					room_name = userentry.get()
 					message = "J:"+room_name+":"+user_name+":"+myIP+":"+PortNumber+"::\r\n"
@@ -138,12 +150,13 @@ def do_Join():
 
 							global chatHashID
 							chatHashID = members[0]
-
 							global listOfMembers
 							CmdWin.insert(1.0, "\nJoined chat room: "+room_name)
+
 							for group in createChunker(members[1:], 3):
 								listOfMembers.append(group)
 								CmdWin.insert(1.0, "\n\t"+str(group))
+
 							CmdWin.insert(1.0, "\nHere are the members:")
 							client_status = "JOINED"
 							userentry.delete(0, END)
@@ -153,6 +166,7 @@ def do_Join():
 							_thread.start_new_thread (runForever, ())
 							_thread.start_new_thread (runningServer, ())
 							searchPeer(listOfMembers)
+
 						elif recieveResponse[0] == 'F':
 							recieveResponse = recieveResponse[2:-4]
 							CmdWin.insert(1.0, "\nError performing JOIN req: "+recieveResponse)
@@ -164,6 +178,7 @@ def do_Join():
 				CmdWin.insert(1.0, "\nPlease set user_name first.")
 		else:
 			CmdWin.insert(1.0, "\nPlease enter room name!")
+
 	except socket.error as err:
 		print(str(err))
 		CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
@@ -176,6 +191,7 @@ def runForever():
 	while roomServerSocket:
 		time.sleep(20)
 		updatelistOfMembers("Keep Alive")
+
 		if client_status == "JOINED" or not forwardLink:
 			global listOfMembers
 			searchPeer(listOfMembers)
@@ -193,19 +209,23 @@ def runningServer():
 		if recieveResponse:
 			if recieveResponse[0] == 'P':
 				recieveResponse = recieveResponse[2:-4]
-				connectorInfo = recieveResponse.split(":")
-				connectorRoomname = connectorInfo[0]
-				connectorUsername = connectorInfo[1]
-				connectorIP = connectorInfo[2]
-				connectorPort = connectorInfo[3]
-				connectorMsgID = connectorInfo[4]
+				incomingInfo = recieveResponse.split(":")
+
+				incomingRoomname = incomingInfo[0]
+				incomingUsername = incomingInfo[1]
+				incomingIP = incomingInfo[2]
+				incomingPort = incomingInfo[3]
+				incomingMsgID = incomingInfo[4]
+				
 				global listOfMembers
+
 				try:
-					memberIndex = listOfMembers.index(connectorInfo[1:4])
+					memberIndex = listOfMembers.index(incomingInfo[1:4])
+
 				except ValueError:
 					if updatelistOfMembers("Server Procedure"):
 						try:
-							memberIndex = listOfMembers.index(connectorInfo[1:4])
+							memberIndex = listOfMembers.index(incomingInfo[1:4])
 						except ValueError:
 							memberIndex = -1
 							print("Unable to connect to " + str(address))
@@ -213,15 +233,17 @@ def runningServer():
 					else:
 						print("Unable to update member's list, so connection was rejected.")
 						isConnection.close()
+
 				if memberIndex != -1:
 					message = "S:"+str(messageID)+"::\r\n"
 					isConnection.send(message.encode("ascii"))
-					concat = connectorUsername + connectorIP + connectorPort
-					backlinks.append(((connectorInfo[1:4],sdbm_hash(concat)), isConnection))
+					concat = incomingUsername + incomingIP + incomingPort
+					backlinks.append(((incomingInfo[1:4],sdbm_hash(concat)), isConnection))
+
 					global client_status
 					client_status = "CONNECTED"
 					_thread.start_new_thread (peerManager, ("Backward", isConnection, ))
-					CmdWin.insert(1.0, "\n" + connectorUsername + " has linked to me")
+					CmdWin.insert(1.0, "\n" + incomingUsername + " has linked to me")
 			else:
 				isConnection.close()
 		else:
@@ -239,20 +261,22 @@ def peerManager(linkType, isConnection):
 				room = msgInfo[0]
 
 				if room == currentRoom:
-					originHashID = msgInfo[1]
-					originUsername = msgInfo[2]
-					originMsgID = msgInfo[3]
-					originMsgLen = msgInfo[4]
-					originMsg = recieveResponse[-(int(originMsgLen)):]
+					sourceHashID = msgInfo[1]
+					sourceUsername = msgInfo[2]
+					sourceMsgID = msgInfo[3]
+					sourceMsgLen = msgInfo[4]
+					sourceMsg = recieveResponse[-(int(sourceMsgLen)):]
 
 					lock.acquire()
 					global messages
-					if (originHashID, originMsgID) not in messages:
-						MsgWin.insert(1.0, "\n["+originUsername+"] "+originMsg)
-						messages.append((originHashID, originMsgID))
+
+					if (sourceHashID, sourceMsgID) not in messages:
+						MsgWin.insert(1.0, "\n["+sourceUsername+"] "+sourceMsg)
+						messages.append((sourceHashID, sourceMsgID))
 						lock.release()
-						echoMessage(originHashID, originUsername, originMsg, originMsgID)
-						arr = [member for member in currentHashes if str(member[1]) == str(originHashID) ]
+						echoMessage(sourceHashID, sourceUsername, sourceMsg, sourceMsgID)
+						arr = [member for member in currentHashes if str(member[1]) == str(sourceHashID)]
+
 						if not arr:
 							print("Not found hash", str(arr))
 							updatelistOfMembers("Peer Handler")
@@ -390,15 +414,16 @@ def do_Send():
 			CmdWin.insert(1.0, "\nNot joined any chat!")
 	userentry.delete(0, END)
 
-def echoMessage(originHashID, user_name, message, messageID):
-	message = "T:"+room_name+":"+str(originHashID)+":"+user_name+":"+str(messageID)+":"+str(len(message))+":"+message+"::\r\n"
+def echoMessage(sourceHashID, user_name, message, messageID):
+	message = "T:"+room_name+":"+str(sourceHashID)+":"+user_name+":"+str(messageID)+":"+str(len(message))+":"+message+"::\r\n"
+	sentTo = []
 	if forwardLink:
-		if str(forwardLink[0][1]) != str(originHashID):
+		if str(forwardLink[0][1]) != str(sourceHashID):
 			forwardLink[1].send(message.encode("ascii"))
 			sentTo.append(str(forwardLink[0][1]))
 
 	for back in backlinks:
-		if str(back[0][1]) != str(originHashID):
+		if str(back[0][1]) != str(sourceHashID):
 			back[1].send(message.encode("ascii"))
 			sentTo.append(str(back[0][1]))
 	# CmdWin.insert(1.0, "\nSent to " + str(sentTo))
@@ -451,7 +476,6 @@ def connectServer(callback):
 
 def do_Poke():
 	pokeflag=False #checks if user has joined
-	CmdWin.insert(1.0, "\nPress Poke")
 	print(client_status)
 	if client_status == "CONNECTED":
 		if userentry.get():
@@ -459,8 +483,8 @@ def do_Poke():
 			for name in listOfMembers:
 				if name[0] == userentry.get():
 					flag=True
-			if userentry.get() == user_name or flag==False:
-				CmdWin.insert(1.0, "\nPoke error.")
+			if userentry.get() == user_name:
+				CmdWin.insert(1.0, "\nSorry the user cannot poke himself.")
 				pokeflag=True
 			else:
 				pokename = userentry.get() #poking client name
@@ -497,12 +521,15 @@ def do_Poke():
 				sockudp.sendto(sandesh.encode("ascii"), (name[1], int(name[2])))
 				sockudp.settimeout(5.0)
 
-		try:
-			_,_= sockudp.recvfrom(1024)
-			CmdWin.insert(1.0, "\nGot Acknowledgement.")
-		except socket.timeout:
-			print("Timeout! Try again.")
-			CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
+				try:
+					_,_= sockudp.recvfrom(1024)
+					CmdWin.insert(1.0, "\nGot Acknowledgement.")
+				except socket.timeout:
+					print("Timeout! Try again.")
+					CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
+			
+			else:
+				CmdWin.insert(1.0, "\nThe user is not in the room to be poked.")
 
 		sockudp.close()
 
