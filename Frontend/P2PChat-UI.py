@@ -25,7 +25,7 @@ currentChatHashID = 0  # ID of the last message that was sent by the user
 messageID = 0
 # Global Lists adn Tuples
 currentHashes = []
-listOfMemeber = []
+listOfMembers = []
 forwardLink = ()
 backlinks = []
 messages = []
