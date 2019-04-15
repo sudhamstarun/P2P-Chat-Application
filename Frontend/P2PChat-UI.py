@@ -251,7 +251,7 @@ def peerManager(linkType, isConnection):
 		searchPeer(listOfMembers)
 
 	else:
-		global backlinks 
+		global backlinks
 		for back in backlinks:
 			if back[1] == isConnection:
 				backlinks.remove(back)
@@ -427,7 +427,49 @@ def connectServer(callback):
 			time.sleep(5)
 	callback()
 def do_Poke():
-	print("Press Poke")
+    pokeflag=False #checks if user has joined
+    CmdWin.insert(1.0, "\nPress Poke")
+
+    if client_status != "JOINED":
+	    CmdWin.insert(1.0, "\nJoin a room first")
+        pokeflag=True
+
+	elif client_status == "JOINED":
+        if userentry.get():
+            flag=False
+		    for name in listofMember:
+			    if name[0] == userentry.get():
+				    flag=True
+		    if userentry.get() == user_name or flag=False:
+			    CmdWin.insert(1.0, "\nPoke error.")
+
+        else:
+            CmdWin.insert(1.0, "\nList of Members")
+		    for member in listofMember:
+                CmdWin.insert(1.0, "\n\t" + str(member[0])) #displays list of members
+
+		    CmdWin.insert(1.0, "\nTo whom do you want to send the poke?")
+
+    if pokeflag=False:
+		#poke function
+        pokename = userentry.get() #poking client name
+        userentry.delete(0, END)
+		for name in listofMember:
+			if name[0] == pokename:
+				pokenameip=name[1] #poke client IP
+				pokenameport=name[2] #poke client Port
+		message = "K:" + room_name + ":" + user_name + "::\r\n"
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #UDP Socket
+		sock.sendto(message.encode("ascii"), (pokenameip, int(pokenameport))
+		sock.settimeout(2)
+			try:
+				_, _ = sock.recvfrom(1024)
+				CmdWin.insert(1.0, "\nGot Acknowledgement.")
+			except socket.timeout:
+				print("Timeout! Try again.")
+				CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
+		sock.close()
+
 #
 # Set up of Basic UI
 #
