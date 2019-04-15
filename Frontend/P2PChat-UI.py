@@ -27,12 +27,12 @@ currentRoom = ""  # name of the current
 currentChatHashID = 0  # ID of the last message that was sent by the user
 messageID = 0
 
-udpsocket #variable for udp socket connection
+ #variable for udp socket connection
 
 
 # Global Lists adn Tuples
 currentHashes = []
-listofMemeber = []
+listofMember = []
 forwardLink = ()
 backlinks = []
 messages = []
@@ -64,12 +64,12 @@ def createChunks(array, sizeOfChunk):
     return (array[pos:pos + sizeOfChunk] for pos in range(0, len(array), sizeOfChunk))
 
 
-def hashCalculator(listofMemeber):
+def hashCalculator(listofMember):
     global currentHashes
 
     currentHashes = []
 
-    for member in listofMemeber:
+    for member in listofMember:
         concat = ""
         for element in member:
             concat = concat + element
@@ -100,15 +100,15 @@ def memberListUpdate(*source):
             members = receiveResponse.split(":")
 
             if currentChatHashID != members[0]:
-                global listofMemeber
+                global listofMember
                 currentChatHashID = members[0]
-                listofMemeber = []
+                listofMember = []
 
                 for cluster in createChunks(members[1:], 3):
-                    listofMemeber.append(cluster)
+                    listofMember.append(cluster)
 
                 print("List has been updated")
-                hashCalculator(listofMemeber)
+                hashCalculator(listofMember)
             elif receiveResponse[0] == "F":
                 receiveResponse = receiveResponse[2:-4]
                 CmdWin.insert(
@@ -184,7 +184,7 @@ def peerManager(linkType, isConnection):
         forwardLink = ()
         global client_status
         client_status="JOINED"
-        searchPeer(listofMemeber)
+        searchPeer(listofMember)
 
     else:
         global backlinks
@@ -213,14 +213,14 @@ def runningServerLogic():
                 connectorPort = connectorInfo[3]
                 connectorRoomName = connectorInfo[0]
 
-                global listofMemeber
+                global listofMember
 
                 try:
-                    memberIndex = listofMemeber.index(connectorInfo[1:4])
+                    memberIndex = listofMember.index(connectorInfo[1:4])
                 except ValueError:
                     if memberListUpdate("Server Procedure"):
                         try:
-                            memberIndex = listofMemeber.index(connectorInfo[1:4])
+                            memberIndex = listofMember.index(connectorInfo[1:4])
                         except ValueError:
                             memberIndex = -1
                             print("Unable to connect to" + str(address))
@@ -252,14 +252,14 @@ def runProcedureForever():
         memberListUpdate("Keep Alive")
 
         if client_status == "JOINED" or not forwardLink:
-            global listofMemeber
-            searchPeer(listofMemeber)
+            global listofMember
+            searchPeer(listofMember)
 
-def searchPeer(listofMemeber):
+def searchPeer(listofMember):
     global currentHashes
     global currentHashID
 
-    currentInfo = hashCalculator(listofMemeber)
+    currentInfo = hashCalculator(listofMember)
     currentHashID = sdbm_hash(user_name+IPAddress+PortNumber)
     start = (hashes.index((currentInfo, currentHashID)) + 1)%len(currentHashes)
 
@@ -334,14 +334,14 @@ def connectServer(callback):
     callback()
 
 def udp_listener():
-	while True:
-		inputmessage, address = udpsocket.recvfrom(1024)
-		inputmessage = message.decode("utf-8")
+    while True:
+        inputmessage, address = udpsocket.recvfrom(1024)
+        inputmessage = message.decode("utf-8")
         if inputmessage[0] == 'K':
-		    Acknowledgement = "A::\r\n"
-		    udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], address[1]))
+            Acknowledgement = "A::\r\n"
+            udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], address[1]))
             name=inputmessage.split(":")
-		    MsgWin.insert(1.0, "\nYou were poked by "+str(name[2])
+            MsgWin.insert(1.0, "\nYou were poked by "+str(name[2]))
 
 
 #
@@ -369,11 +369,12 @@ def do_User():
     else:
         CmdWin.insert(1.0, "\nPlease enter your desired username")
 
-       #create Udpsocket
-	udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	udpsocket.bind(('', PortNumber))
-	udpthread = threading.Thread(target=udp_listener, daemon=True)
-	udpthread.start()
+        #create Udpsocket
+    global udpsocket
+    udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udpsocket.bind(('', int(PortNumber)))
+    udpthread = threading.Thread(target=udp_listener, daemon=True)
+    udpthread.start()
 
 
 def do_List():
@@ -421,7 +422,7 @@ def do_Join():
     # starting try except loop again
 
     global currentChatHashID
-    global listofMemeber
+    global listofMember
     global currentRoom
     global client_status
 
@@ -444,13 +445,13 @@ def do_Join():
                             members = receiveResponse.split(":")
 
                             global currentChatHashID
-                            global listofMemeber
+                            global listofMember
                             currentChatHashID = members[0]
                             CmdWin.insert(1.0, "\nChat room joined succesfully : " + room_name)
 
 
                             for chunk in createChunks(members[1:], 3):
-                                listofMemeber.append(chunk)
+                                listofMember.append(chunk)
                                 CmdWin.insert(1.0, "\n\t" + str(chunk))
                             CmdWin.insert(1.0, "\nList of members:")
                             client_status = "JOINED"
@@ -459,7 +460,7 @@ def do_Join():
                             currentRoom = room_name
                             _thread.start_new_thread (runProcedureForever, ())
                             _thread.start_new_thread (runningServerLogic, ())
-                            searchPeer(listofMemeber)
+                            searchPeer(listofMember)
 
                         elif receiveResponse[0]== "F":
                             receiveResponse[0] = receiveResponse[2:-4]
@@ -489,7 +490,7 @@ def do_Send():
     userentry.delete(0, END)
 
 
-def do_Poke(self):
+def do_Poke():
     pokeflag=False #checks if user has joined
     CmdWin.insert(1.0, "\nPress Poke")
     if client_status != "JOINED":
@@ -497,24 +498,24 @@ def do_Poke(self):
         pokeflag=True    
     elif client_status == "JOINED" and userentry.get()=='':
         for chunk in createChunks(members[1], 3):
-            listofMemeber.append(chunk)
+            listofMember.append(chunk)
             CmdWin.insert(1.0, "\n\t" + str(chunk[0])) #displays list of members
         CmdWin.insert(1.0, "\nTo whom do you want to send the poke?")
         flag=False
-        for name in listofMemeber:
+        for name in listofMember:
             if name[0] == userentry.get():
                 flag=True
-        if userentry.get() == user_name or flag=False:
+        if userentry.get() == user_name or flag==False:
             CmdWin.insert(1.0, "\nPoke error.")
-        else
+        else:
             pokename = userentry.get() 	#poking client name
     else:
         pokename = userentry.get() #poking client name
         userentry.delete(0, END)
 
-    if pokeflag=False:
+    if pokeflag==False:
         #poke function
-        for name in listofMemeber:
+        for name in listofMember:
             if name[0] == pokename:
                 pokenameip=name[1] #poke client IP
                 pokenameport=name[2] #poke client Port
@@ -522,12 +523,12 @@ def do_Poke(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #UDP Socket 
         sock.sendto(message.encode("ascii"), (pokenameip, pokenameport))
         sock.settimeout(2)
-            try:
-                _, _ = sock.recvfrom(1024)
-                CmdWin.insert(1.0, "\nGot Acknowledgement.")
-            except socket.timeout:
-                print("Timeout! Try again.")
-                CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
+        try:
+            _, _ = sock.recvfrom(1024)
+            CmdWin.insert(1.0, "\nGot Acknowledgement.")
+        except socket.timeout:
+            print("Timeout! Try again.")
+            CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
         sock.close()
 
 
