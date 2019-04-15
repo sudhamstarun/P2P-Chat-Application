@@ -119,7 +119,7 @@ def memberListUpdate(*source):
 def peerConnect(peerSocket):
     msg = "P:"+room_name+":"+user_name+":"+IPAddress+":"+PortNumber+":"+str(messageID)+"::\r\n"
     try:
-        peerSocket.send(msg.encode("ascii")) 
+        peerSocket.send(msg.encode("ascii"))
         receiveResponse = peerSocket.recv(1024)
         receiveResponse = str(receiveResponse.decode("ascii"))
         if receiveResponse:
@@ -162,7 +162,7 @@ def peerManager(linkType, isConnection):
                     if not memberArray:
                         print("Hash not found", str(memberArray))
                         memberListUpdate("Peer Handler")
-                
+
                 else:
                     print("Received repeated message")
                     lock.release()
@@ -178,7 +178,7 @@ def peerManager(linkType, isConnection):
         global client_status
         client_status="JOINED"
         searchPeer(listofMemeber)
-    
+
     else:
         global backlinks
         for link in backlinks:
@@ -189,11 +189,11 @@ def peerManager(linkType, isConnection):
 def runningServerLogic():
     sockfd = socket.socket()
     sockfd.bind(('', int(PortNumber)))
-    
+
     while sockfd:
         sockfd.listen(5)
         isConnection, address = sockfd.accept()
-        receiveResponse = isConnection.recv(1024)			
+        receiveResponse = isConnection.recv(1024)
         receiveResponse = str(receiveResponse.decode("ascii"))
         print ("Accepted connection from" + str(address))
         if receiveResponse:
@@ -220,7 +220,7 @@ def runningServerLogic():
                             isConnection.close()
                     else:
                         print("The connection was rejected as unable to update the members list")
-                    
+
                 if memberIndex != -1:
                     msg = "S:" + str(messageID) + "::\r\n"
                     isConnection.send(msg.encode('ascii'))
@@ -232,7 +232,7 @@ def runningServerLogic():
                     client_status = "CONNECTED"
                     _thread.start_new_thread (peerManager, ("Backward", isConnection, ))
                     CmdWin.insrt(1.0, "\n" + connectorUserName + "has linked to me")
-            
+
             else:
                 isConnection.close()
         else:
@@ -276,18 +276,18 @@ def searchPeer(listofMemeber):
 
             else:
                 if peerConnect(peerSocket):
-                    CmdWin.insert(1.0, "\nConnected via - " + hashes[start][0][0])			
+                    CmdWin.insert(1.0, "\nConnected via - " + hashes[start][0][0])
                     global client_status
-                    client_status = "CONNECTED"							
-                    global forwardLink				
-                    forwardLink = (currentHashes[start], peerSocket)					
-                    _thread.start_new_thread (peerManager, ("Forward", peerSocket, ))	
+                    client_status = "CONNECTED"
+                    global forwardLink
+                    forwardLink = (currentHashes[start], peerSocket)
+                    _thread.start_new_thread (peerManager, ("Forward", peerSocket, ))
                     break
                 else:
                     peerSocket.close()
                     start = (start+1)%len(currentHashes)
                     continue
-    
+
     if client_status != "CONNECTED":
         print("Cannot connect as forward connection not found")
 
@@ -321,7 +321,7 @@ def connectServer(callback):
         except ConnectionRefusedError:
             roomServerSocket.close()
             CmdWin.delete(2.0, 3.0)
-            CmdWin.insert(1.0, "\nCannot connect to the Room Server right now, reconnecting in a while......(" + str(i))
+            CmdWin.insert(1.0, "\nCannot connect to the Room Server right now, reconnecting in a while......(" + str(iterator))
             time.sleep(5)
 
     callback()
@@ -404,7 +404,7 @@ def do_Join():
         if userentry.get():
             if user_name != "":
                 if not (client_status == "JOINED" or client_status == "CONNECTED"):
-                    global room_name  
+                    global room_name
                     room_name = userentry.get()
 
                     message = "J:" + room_name + ":" + user_name + \
@@ -422,7 +422,7 @@ def do_Join():
                             global listofMemeber
                             currentChatHashID = members[0]
                             CmdWin.insert(1.0, "\nChat room joined succesfully : " + room_name)
-                            
+
 
                             for chunk in createChunks(members[1:], 3):
                                 listofMemeber.append(chunk)
@@ -435,7 +435,7 @@ def do_Join():
                             _thread.start_new_thread (runProcedureForever, ())
                             _thread.start_new_thread (runningServerLogic, ())
                             searchPeer(listofMemeber)
-                        
+
                         elif receiveResponse[0]== "F":
                             receiveResponse[0] = receiveResponse[2:-4]
                             CmdWin.insert(1.0, "\n Error in joining: " + receiveResponse)
@@ -448,21 +448,32 @@ def do_Join():
     except socket.error as err:
         print(str(err))
         CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
-        roomServerSocket.close()	
+        roomServerSocket.close()
         _thread.start_new_thread (connectServer, (do_Join, ))
-                    
+
 
 def do_Send():
     if userentry.get():
-        if client_status == "JOINED" or client_status == "CONNECTED":		
+        if client_status == "JOINED" or client_status == "CONNECTED":
             global messageID
             messageID += 1
             MsgWin.insert(1.0, "\n["+user_name+"] "+userentry.get())
-            broadcastMessage(currentHashID, user_name, userentry.get(), messageID)		#Call echoMessage with my details. 
+            broadcastMessage(currentHashID, user_name, userentry.get(), messageID)		#Call echoMessage with my details.
         else:
             CmdWin.insert(1.0, "\nNot joined any chat!")
     userentry.delete(0, END)
 
+def broadcastMessage(currentHashID, user_name, message, messageID):
+	msg = "T:"+room_name+":"+str(currentHashID)+":"+user_name+":"+str(messageID)+":"+str(len(message))+":"+message+"::\r\n"
+	if forwardLink:
+		if str(forwardLink[0][1]) != str(currentHashID):
+			forwardLink[1].send(message.encode("ascii"))
+			sentTo.append(str(forwardLink[0][1]))
+
+	for link in backlinks:
+		if str(link[0][1]) != str(currentHashID):
+			link[1].send(message.encode("ascii"))
+			sentTo.apend(str(link[0][1]))
 
 def do_Poke():
     CmdWin.insert(1.0, "\nPress Poke")
