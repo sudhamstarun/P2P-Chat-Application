@@ -19,7 +19,7 @@ import _thread
 #
 
 client_status = "STARTED"  # status of the client as mentioned in the state diagrams
-user_name =""  # Username defined by the user
+user_name = ""  # Username defined by the user
 currentRoom = ""  # name of the current
 currentChatHashID = 0  # ID of the last message that was sent by the user
 messageID = 0
@@ -41,24 +41,41 @@ lock = threading.Lock()
 # to this hash function
 #
 
+
 def sdbm_hash(instr):
 	hash = 0
 	for c in instr:
 		hash = int(ord(c)) + (hash << 6) + (hash << 16) - hash
 	return hash & 0xffffffffffffffff
 
-#Inspired from https://stackoverflow.com/questions/52928737/best-practice-to-vstack-multiple-large-np-arrays
+# Inspired from https://stackoverflow.com/questions/52928737/best-practice-to-vstack-multiple-large-np-arrays
+
+
 def createChunker(array, chunkSize):
     return (array[pos:pos + chunkSize] for pos in range(0, len(array), chunkSize))
 
 #
 # Functions to handle user input
 #
+  def udp_listener():
+    while True:
+        inputmessage, address = udpsocket.recvfrom(1024)
+        inputmessage = message.decode("utf-8")
+    if inputmessage[0] == 'K':
+            Acknowledgement = "A::\r\n"
+            udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], address[1]))
+            name=inputmessage.split(":")
+            MsgWin.insert(1.0, "\nYou were poked by "+str(name[2]))
 
 def do_User():
 	global client_status
 	if userentry.get():
 		if client_status != "JOINED" and client_status != "CONNECTED":
+            global udpsocket
+            udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            udpsocket.bind(('', PortNumber))
+            udpthread = threading.Thread(target=udp_listener, daemon=True)
+            udpthread.start()
 			global username
 			username = userentry.get()
 			client_status = "NAMED"
@@ -379,7 +396,7 @@ def echoMessage(originHashID, username, message, messageID):
 		if str(back[0][1]) != str(originHashID):
 			back[1].send(message.encode("ascii"))
 			sentTo.append(str(back[0][1]))
-	#CmdWin.insert(1.0, "\nSent to " + str(sentTo))
+	# CmdWin.insert(1.0, "\nSent to " + str(sentTo))
 
 def do_Quit():
 
@@ -459,13 +476,13 @@ def do_Poke():
 				else:
 					pokename = userentry.get() #poking client name
 					userentry.delete(0, END)
-	
+
 	else:
 		CmdWin.insert(1.0, "\nJoin a room first")
 		pokeflag=True
 
 	if pokeflag==False:
-		#poke function
+		# poke function
 
 		for name in listOfMembers:
 			if name[0] == pokename:
@@ -476,7 +493,7 @@ def do_Poke():
 		sockudp.sendto(message.encode("ascii"), (pokenameip, int(pokenameport)))
 		sockudp.settimeout(2.0)
 		try:
-			_, _ = sockudp.recvfrom(1024)
+			_, _ = udpsocket.recvfrom(1024)
 			CmdWin.insert(1.0, "\nGot Acknowledgement.")
 		except socket.timeout:
 			print("Timeout! Try again.")
