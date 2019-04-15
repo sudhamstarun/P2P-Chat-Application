@@ -56,6 +56,7 @@ def createChunker(array, chunkSize):
 # Functions to handle user input
 #
 def udp_listener():
+	#Creates a UDP Listener to receive Poke Messages
 	while True:
 		inputmessage, address = udpsocket.recvfrom(1024)
 		inputmessage = inputmessage.decode("utf-8")
@@ -71,6 +72,7 @@ def udp_listener():
 					MsgWin.insert(1.0, "\nYou were poked by "+str(name[0]))
 
 def do_User():
+	#function to create username 
 	global client_status
 	flag = False
 	if userentry.get():
@@ -92,6 +94,7 @@ def do_User():
 		CmdWin.insert(1.0, "\nCan't leave the user name box empty. Please enter user_name!")
 
 def do_List():
+	#function to get list of active chatrooms
 	message = "L::\r\n"
 	try:
 		roomServerSocket.send(message.encode("ascii"))
@@ -125,13 +128,14 @@ def do_List():
 		_thread.start_new_thread (connectServer, (do_List, ))
 
 def do_Join():
+	#function to join a chatroom
 	global client_status
 
 	try:
 		if userentry.get():
 			if user_name != "":
 				if not (client_status == "JOINED" or client_status == "CONNECTED"):
-					global udpsocket
+					global udpsocket #create a udp socket to start the listener 
 					udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 					udpsocket.bind(('', int(PortNumber)))
 					udpthread = threading.Thread(target=udp_listener, daemon=True)
@@ -404,6 +408,7 @@ def peerConnect(peerSocket):
 		return False
 
 def do_Send():
+	#function to send messages to chatroom
 	if userentry.get():
 		if client_status == "JOINED" or client_status == "CONNECTED":
 			global messageID
@@ -429,6 +434,7 @@ def echoMessage(sourceHashID, user_name, message, messageID):
 	# CmdWin.insert(1.0, "\nSent to " + str(sentTo))
 
 def do_Quit():
+	#function to quit the chat client
 
 	if roomServerSocket:
 		roomServerSocket.close()
@@ -475,6 +481,7 @@ def connectServer(callback):
 	callback()
 
 def do_Poke():
+	#function to send poke to user in chatroom
 	pokeflag=False #checks if user has joined
 	print(client_status)
 	if client_status == "CONNECTED":
