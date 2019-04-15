@@ -27,7 +27,7 @@ currentRoom = ""  # name of the current
 currentChatHashID = 0  # ID of the last message that was sent by the user
 messageID = 0
 
- #variable for udp socket connection
+udpsocket #variable for udp socket connection
 
 
 # Global Lists adn Tuples
@@ -334,14 +334,14 @@ def connectServer(callback):
     callback()
 
 def udp_listener():
-    while True:
-        inputmessage, address = udpsocket.recvfrom(1024)
-        inputmessage = message.decode("utf-8")
+	while True:
+		inputmessage, address = udpsocket.recvfrom(1024)
+		inputmessage = message.decode("utf-8")
         if inputmessage[0] == 'K':
-            Acknowledgement = "A::\r\n"
-            udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], address[1]))
+		    Acknowledgement = "A::\r\n"
+		    udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], address[1]))
             name=inputmessage.split(":")
-            MsgWin.insert(1.0, "\nYou were poked by "+str(name[2]))
+		    MsgWin.insert(1.0, "\nYou were poked by "+str(name[2]))
 
 
 #
@@ -369,12 +369,11 @@ def do_User():
     else:
         CmdWin.insert(1.0, "\nPlease enter your desired username")
 
-        #create Udpsocket
-    global udpsocket
-    udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udpsocket.bind(('', int(PortNumber)))
-    udpthread = threading.Thread(target=udp_listener, daemon=True)
-    udpthread.start()
+       #create Udpsocket
+	udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	udpsocket.bind(('', PortNumber))
+	udpthread = threading.Thread(target=udp_listener, daemon=True)
+	udpthread.start()
 
 
 def do_List():
@@ -494,42 +493,41 @@ def do_Poke():
     pokeflag=False #checks if user has joined
     CmdWin.insert(1.0, "\nPress Poke")
     if client_status != "JOINED":
-        CmdWin.insert(1.0, "\nJoin a room first")
+	    CmdWin.insert(1.0, "\nJoin a room first")
         pokeflag=True    
-    elif client_status == "JOINED" and userentry.get()=='':
-        for chunk in createChunks(members[1], 3):
-            listofMember.append(chunk)
-            CmdWin.insert(1.0, "\n\t" + str(chunk[0])) #displays list of members
-        CmdWin.insert(1.0, "\nTo whom do you want to send the poke?")
-        flag=False
-        for name in listofMember:
-            if name[0] == userentry.get():
-                flag=True
-        if userentry.get() == user_name or flag==False:
-            CmdWin.insert(1.0, "\nPoke error.")
-        else:
-            pokename = userentry.get() 	#poking client name
-    else:
-        pokename = userentry.get() #poking client name
+	elif client_status == "JOINED" and userentry.get()=='':
+		for member in listofMember:
+            CmdWin.insert(1.0, "\n\t" + str(member[0])) #displays list of members
+		CmdWin.insert(1.0, "\nTo whom do you want to send the poke?")
+		flag=False
+		for name in listofMember:
+			if name[0] == userentry.get():
+				flag=True
+		if userentry.get() == user_name or flag=False:
+			CmdWin.insert(1.0, "\nPoke error.")
+		else
+			pokename = userentry.get() 	#poking client name
+	else:
+	    pokename = userentry.get() #poking client name
         userentry.delete(0, END)
 
-    if pokeflag==False:
-        #poke function
-        for name in listofMember:
-            if name[0] == pokename:
-                pokenameip=name[1] #poke client IP
-                pokenameport=name[2] #poke client Port
-        message = "K:" + room_name + ":" + user_name + "::\r\n"
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #UDP Socket 
-        sock.sendto(message.encode("ascii"), (pokenameip, pokenameport))
-        sock.settimeout(2)
-        try:
-            _, _ = sock.recvfrom(1024)
-            CmdWin.insert(1.0, "\nGot Acknowledgement.")
-        except socket.timeout:
-            print("Timeout! Try again.")
-            CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
-        sock.close()
+    if pokeflag=False:
+		#poke function
+		for name in listofMember:
+			if name[0] == pokename:
+				pokenameip=name[1] #poke client IP
+				pokenameport=name[2] #poke client Port
+		message = "K:" + room_name + ":" + user_name + "::\r\n"
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #UDP Socket 
+		sock.sendto(message.encode("ascii"), (pokenameip, pokenameport))
+		sock.settimeout(2)
+			try:
+				_, _ = sock.recvfrom(1024)
+				CmdWin.insert(1.0, "\nGot Acknowledgement.")
+			except socket.timeout:
+				print("Timeout! Try again.")
+				CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
+		sock.close()
 
 
 def do_Quit():
