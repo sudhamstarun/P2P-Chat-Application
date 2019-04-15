@@ -47,6 +47,9 @@ def sdbm_hash(instr):
 		hash = int(ord(c)) + (hash << 6) + (hash << 16) - hash
 	return hash & 0xffffffffffffffff
 
+#Inspired from https://stackoverflow.com/questions/52928737/best-practice-to-vstack-multiple-large-np-arrays
+def createChunker(array, chunkSize):
+    return (array[pos:pos + chunkSize] for pos in range(0, len(array), chunkSize))
 
 #
 # Functions to handle user input
@@ -91,11 +94,7 @@ def do_List():
 		print(str(err))
 		CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
 		roomServerSocket.close()
-		_thread.start_new_thread (roomServerConnect, (do_List, ))
-
-#ADAPTED FROM http://stackoverflow.com/questions/38680508/how-to-vstack-efficiently-a-sequence-of-large-numpy-array-chunks
-def createChunker(array, chunkSize):
-    return (array[pos:pos + chunkSize] for pos in range(0, len(array), chunkSize))
+		_thread.start_new_thread (connectServer, (do_List, ))
 
 def do_Join():
 	global client_status
@@ -105,7 +104,7 @@ def do_Join():
 				if not (client_status == "JOINED" or client_status == "CONNECTED"):
 					global room_name
 					room_name = userentry.get()
-					message = "J:"+room_name+":"+username+":"+myIP+":"+myPort+"::\r\n"
+					message = "J:"+room_name+":"+username+":"+myIP+":"+PortNumber+"::\r\n"
 					roomServerSocket.send(message.encode("ascii"))
 					recieveResponse = roomServerSocket.recv(1024)
 					recieveResponse = str(recieveResponse.decode("ascii"))
@@ -147,7 +146,7 @@ def do_Join():
 		print(str(err))
 		CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
 		roomServerSocket.close()
-		_thread.start_new_thread (roomServerConnect, (do_Join, ))
+		_thread.start_new_thread (connectServer, (do_Join, ))
 
 
 def runForever():
@@ -161,7 +160,7 @@ def runForever():
 
 def runningServer():
 	sockfd = socket.socket()
-	sockfd.bind( ('', int(myPort)) )
+	sockfd.bind( ('', int(PortNumber)) )
 	while sockfd:
 		sockfd.listen(5)
 		isConnection, address = sockfd.accept()
@@ -258,7 +257,7 @@ def peerManager(linkType, isConnection):
 				break
 
 def updatelistOfMembers(*source):
-	message = "J:"+room_name+":"+username+":"+myIP+":"+myPort+"::\r\n"
+	message = "J:"+room_name+":"+username+":"+myIP+":"+PortNumber+"::\r\n"
 	try:
 		roomServerSocket.send(message.encode("ascii"))
 		recieveResponse = roomServerSocket.recv(1024)
@@ -288,7 +287,7 @@ def updatelistOfMembers(*source):
 	except:
 		CmdWin.insert(1.0, "\nConnection to Room Server broken, reconnecting;")
 		roomServerSocket.close()
-		_thread.start_new_thread (roomServerConnect, (updatelistOfMembers, ))
+		_thread.start_new_thread (connectServer, (updatelistOfMembers, ))
 
 def hashCalculator(listOfMembers):
 	global currentHashes
@@ -308,7 +307,7 @@ def searchPeer(listOfMembers):
 	global currentHashes
 	global myHashID
 
-	myHashID = sdbm_hash(username+myIP+myPort)
+	myHashID = sdbm_hash(username+myIP+PortNumber)
 	start = (currentHashes.index((myInfo, myHashID)) + 1) % len(currentHashes)
 
 	while currentHashes[start][1] != myHashID:
@@ -344,7 +343,7 @@ def searchPeer(listOfMembers):
 		print("Unable to find forward connection")
 
 def peerConnect(peerSocket):
-	message = "P:"+room_name+":"+username+":"+myIP+":"+myPort+":"+str(messageID)+"::\r\n"
+	message = "P:"+room_name+":"+username+":"+myIP+":"+PortNumber+":"+str(messageID)+"::\r\n"
 	try:
 		peerSocket.send(message.encode("ascii"))
 		recieveResponse = peerSocket.recv(1024)
@@ -394,6 +393,37 @@ def do_Quit():
 		print("Quit: Closed Socket to Backward link - ", back[0][0][0])
 	sys.exit(0)
 
+def connectServer(callback):
+	global roomServerSocket
+	global roomServerIP
+	global roomServerPort
+	global myIP
+
+	ButtonOne['state'] = 'disabled'
+	ButtonTwo['state'] = 'disabled'
+	ButtonThree['state'] = 'disabled'
+	ButtonFour['state'] = 'disabled'
+
+	iterator=0
+	while True:
+		i = i+1
+		print("Trying to connect to Room Server")
+		try:
+			roomServerSocket = socket.socket()
+			roomServerSocket.connect((roomServerIP, int(roomServerPort)))
+			myIP = roomServerSocket.getsockname()[0]
+			CmdWin.insert(1.0, "\nConnected to Room Server!")
+			ButtonOne['state'] = 'normal'
+			ButtonTwo['state'] = 'normal'
+			ButtonThree['state'] = 'normal'
+		    ButtonFour['state'] = 'normal'
+			break
+		except ConnectionRefusedError:
+			roomServerSocket.close()
+			CmdWin.delete(2.0, 3.0)
+			CmdWin.insert(1.0, "\nCannot contact Room Server, will try again in some time (" + str(i) +")")
+			time.sleep(5)
+	callback()
 
 #
 # Set up of Basic UI
