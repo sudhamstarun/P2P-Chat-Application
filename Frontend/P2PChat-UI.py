@@ -19,7 +19,7 @@ import _thread
 #
 
 client_status = "STARTED"  # status of the client as mentioned in the state diagrams
-user_name = ""  # Username defined by the user
+user_name = ""  # user_name defined by the user
 currentRoom = ""  # name of the current
 currentChatHashID = 0  # ID of the last message that was sent by the user
 messageID = 0
@@ -36,7 +36,7 @@ lock = threading.Lock()
 # Hash ID for each peer.
 # Source: http://www.cse.yorku.ca/~oz/hash.html
 #
-# Concatenate the peer's username, str(IP address),
+# Concatenate the peer's user_name, str(IP address),
 # and str(Port) to form a string that be the input
 # to this hash function
 #
@@ -55,8 +55,6 @@ def createChunker(array, chunkSize):
 #
 # Functions to handle user input
 #
-
-
 def udp_listener():
 	#Creates a UDP Listener to receive Poke Messages
 	while True:
@@ -68,13 +66,13 @@ def udp_listener():
 			Acknowledgement = "A::\r\n"
 
 			for name in listOfMembers:
-				if name[0] == splitmessage[2]:
+				if name[0] == splitmessage[2]:   
 					print(name[1], name[2])
 					udpsocket.sendto(Acknowledgement.encode("ascii"), (address[0], int(address[1])))
 					MsgWin.insert(1.0, "\nYou were poked by "+str(name[0]))
 
 def do_User():
-	#function to create username
+	#function to create username 
 	global client_status
 	flag = False
 	if userentry.get():
@@ -88,10 +86,10 @@ def do_User():
 			global user_name
 			user_name = userentry.get()
 			client_status = "NAMED"
-			CmdWin.insert(1.0, "\n[User] username: "+username)
+			CmdWin.insert(1.0, "\n[User] username: "+user_name)
 			userentry.delete(0, END)
 		else:
-			CmdWin.insert(1.0, "\nCannot change username after joining a chatroom!")
+			CmdWin.insert(1.0, "\nCannot change user_name after joining a chatroom!")
 	else:
 		CmdWin.insert(1.0, "\nCan't leave the user name box empty. Please enter user_name!")
 
@@ -135,16 +133,16 @@ def do_Join():
 
 	try:
 		if userentry.get():
-			if username != "":
+			if user_name != "":
 				if not (client_status == "JOINED" or client_status == "CONNECTED"):
-					global udpsocket #create a udp socket to start the listener
+					global udpsocket #create a udp socket to start the listener 
 					udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 					udpsocket.bind(('', int(PortNumber)))
 					udpthread = threading.Thread(target=udp_listener, daemon=True)
 					udpthread.start()
 					global room_name
 					room_name = userentry.get()
-					message = "J:"+room_name+":"+username+":"+myIP+":"+PortNumber+"::\r\n"
+					message = "J:"+room_name+":"+user_name+":"+myIP+":"+PortNumber+"::\r\n"
 					roomServerSocket.send(message.encode("ascii"))
 					recieveResponse = roomServerSocket.recv(1024)
 					recieveResponse = str(recieveResponse.decode("ascii"))
@@ -181,7 +179,7 @@ def do_Join():
 				else:
 					CmdWin.insert(1.0, "\nAlready joined/connected to another chatroom!!")
 			else:
-				CmdWin.insert(1.0, "\nPlease set username first.")
+				CmdWin.insert(1.0, "\nPlease set user_name first.")
 		else:
 			CmdWin.insert(1.0, "\nPlease enter room name!")
 
@@ -222,7 +220,7 @@ def runningServer():
 				incomingIP = incomingInfo[2]
 				incomingPort = incomingInfo[3]
 				incomingMsgID = incomingInfo[4]
-
+				
 				global listOfMembers
 
 				try:
@@ -310,7 +308,7 @@ def peerManager(linkType, isConnection):
 				break
 
 def updatelistOfMembers(*source):
-	message = "J:"+room_name+":"+username+":"+myIP+":"+PortNumber+"::\r\n"
+	message = "J:"+room_name+":"+user_name+":"+myIP+":"+PortNumber+"::\r\n"
 	try:
 		roomServerSocket.send(message.encode("ascii"))
 		recieveResponse = roomServerSocket.recv(1024)
@@ -350,7 +348,7 @@ def hashCalculator(listOfMembers):
 		for info in member:
 			concat = concat + info
 		currentHashes.append((member,sdbm_hash(concat)))
-		if member[0] == username:
+		if member[0] == user_name:
 			myInfo = member
 	currentHashes = sorted(currentHashes, key=lambda tup: tup[1])
 	return myInfo
@@ -360,7 +358,7 @@ def searchPeer(listOfMembers):
 	global currentHashes
 	global myHashID
 
-	myHashID = sdbm_hash(username+myIP+PortNumber)
+	myHashID = sdbm_hash(user_name+myIP+PortNumber)
 	start = (currentHashes.index((myInfo, myHashID)) + 1) % len(currentHashes)
 
 	while currentHashes[start][1] != myHashID:
@@ -396,7 +394,7 @@ def searchPeer(listOfMembers):
 		print("Unable to find forward connection")
 
 def peerConnect(peerSocket):
-	message = "P:"+room_name+":"+username+":"+myIP+":"+PortNumber+":"+str(messageID)+"::\r\n"
+	message = "P:"+room_name+":"+user_name+":"+myIP+":"+PortNumber+":"+str(messageID)+"::\r\n"
 	try:
 		peerSocket.send(message.encode("ascii"))
 		recieveResponse = peerSocket.recv(1024)
@@ -415,8 +413,8 @@ def do_Send():
 		if client_status == "JOINED" or client_status == "CONNECTED":
 			global messageID
 			messageID += 1
-			MsgWin.insert(1.0, "\n["+username+"] "+userentry.get())
-			echoMessage(myHashID, username, userentry.get(), messageID)
+			MsgWin.insert(1.0, "\n["+user_name+"] "+userentry.get())
+			echoMessage(myHashID, user_name, userentry.get(), messageID)
 		else:
 			CmdWin.insert(1.0, "\nNot joined any chat!")
 	userentry.delete(0, END)
@@ -513,6 +511,7 @@ def do_Poke():
 						flag=True
 				if userentry.get() == user_name or flag==False:
 					CmdWin.insert(1.0, "\nPoke error.")
+					pokeflag = True
 				else:
 					pokename = userentry.get() #poking client name
 					userentry.delete(0, END)
@@ -521,9 +520,8 @@ def do_Poke():
 		CmdWin.insert(1.0, "\nJoin a room first")
 		pokeflag=True
 
-	if pokeflag==False:
+	if pokeflag==False: 
 		# poke function
-
 		for name in listOfMembers:
 			if name[0] == pokename:
 				sandesh = "K:" + room_name + ":" + user_name + "::\r\n"
@@ -532,15 +530,16 @@ def do_Poke():
 				sockudp.settimeout(5.0)
 				presentFlag = False
 
-
+			
 		if presentFlag == True:
 			CmdWin.insert(1.0, "\nThe user is not in the room to be poked.")
 		try:
-			_, _ = udpsocket.recvfrom(1024)
+			_,_= sockudp.recvfrom(1024)
 			CmdWin.insert(1.0, "\nGot Acknowledgement.")
 		except socket.timeout:
 			print("Timeout! Try again.")
 			CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
+
 		sockudp.close()
 
 
@@ -615,4 +614,5 @@ if __name__ == "__main__":
 		roomServerPort = sys.argv[2]
 		PortNumber = sys.argv[3]
 		_thread.start_new_thread (connectServer, (do_User, ))		#Start a new thread runnning the server part of P2P
+		
 	win.mainloop()
