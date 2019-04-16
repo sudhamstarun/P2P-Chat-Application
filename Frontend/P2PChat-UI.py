@@ -483,6 +483,7 @@ def connectServer(callback):
 def do_Poke():
 	#function to send poke to user in chatroom
 	pokeflag=False #checks if user has joined
+	presentFlag = True
 	print(client_status)
 	if client_status == "CONNECTED":
 		if userentry.get():
@@ -527,18 +528,20 @@ def do_Poke():
 				sockudp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #UDP Socket
 				sockudp.sendto(sandesh.encode("ascii"), (name[1], int(name[2])))
 				sockudp.settimeout(5.0)
+				presentFlag = False
 
-				try:
-					_,_= sockudp.recvfrom(1024)
-					CmdWin.insert(1.0, "\nGot Acknowledgement.")
-				except socket.timeout:
-					print("Timeout! Try again.")
-					CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
 			
-			else:
-				CmdWin.insert(1.0, "\nThe user is not in the room to be poked.")
+		if presentFlag == True:
+			CmdWin.insert(1.0, "\nThe user is not in the room to be poked.")
+		try:
+			_,_= sockudp.recvfrom(1024)
+			CmdWin.insert(1.0, "\nGot Acknowledgement.")
+		except socket.timeout:
+			print("Timeout! Try again.")
+			CmdWin.insert(1.0, "\nDid not receive Acknowledgement.")
 
 		sockudp.close()
+
 
 #
 # Set up of Basic UI
