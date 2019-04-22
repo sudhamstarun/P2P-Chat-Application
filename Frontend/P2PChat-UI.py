@@ -185,7 +185,7 @@ def do_List():
 	message = "L::\r\n"
 	try:
 		roomServerSocket.send(message.encode("ascii"))
-		recieveResponse = roomServerSocket.recv(1024) #check for the response and convert from btye array to string
+		recieveResponse = roomServerSocket.recv(1024) #check for the response and convert from btye array to strings
 		recieveResponse = str(recieveResponse.decode("ascii"))
 
 		if recieveResponse: #checking if the response is there and coditions apply accordingly
